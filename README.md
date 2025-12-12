@@ -34,31 +34,6 @@ TLS 1.2 이상의 보안 통신을 지원하며, MySQL 데이터베이스를 통
 - CSS
 - JavaScript
 
-## 디렉터리 구조
-
-
-├── src/                          # 소스 코드
-│   ├── QServer.c                # 메인 서버 로직
-│   ├── DB.c / DB.h              # 데이터베이스 연동
-│   └── fetch.c / fetch.h        # API 라우팅
-├── public/                       # 정적 파일
-│   ├── login.html               # 로그인 페이지
-│   ├── register.html            # 회원가입 페이지
-│   ├── main.html                # 메인 페이지 (영상 목록)
-│   ├── viewer.html              # 영상 재생 페이지
-│   ├── upload.html              # 영상 업로드 페이지
-│   ├── manage.html              # 내 영상 관리 페이지 
-│   ├── admin_manage.html        # 관리자 페이지
-│   ├── video/                   # 업로드된 영상 파일
-│   └── thumb/                   # 썸네일 이미지
-├── certs/                        # SSL/TLS 인증서
-│   ├── -crt.pem
-│   └── -key.pem
-├── schema.sql                    # 데이터베이스 스키마
-├── ConsoleApplication2.vcxproj   # Visual Studio 프로젝트 파일
-└── README.md            
-
-
 ## 설치 및 실행
 
 ### 사전 요구사항
