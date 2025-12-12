@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Han's server test</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Roboto', Arial, sans-serif; margin: 0; padding: 40px 20px; background: radial-gradient(circle at 20% 20%, rgba(80, 160, 255, 0.12), transparent 30%), #0c1118; color: #e8eef5; display: flex; justify-content: center; }
+    .card { background: #161b22; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 28px; max-width: 720px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.35); }
+    h1 { margin: 0 0 12px 0; font-size: 24px; font-weight: 700; }
+    p { margin: 0 0 16px 0; color: #9fb7d1; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { margin: 6px 0; }
+    a { text-decoration: none; color: #63b3ff; font-weight: 600; }
+    a:hover { text-decoration: underline; color: #8ac7ff; }
+    .meta { margin-top: 18px; font-size: 13px; color: #6e7a8b; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>HAN VIDEO</h1>
+    <p>Public 폴더 파일 목록</p>
+    <ul id="file-list"></ul>
+    <p class="meta">목록 출력 완료!</p>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const fileListElement = document.getElementById('file-list');
+
+      // C 서버가 제공하는 JSON API 엔드포인트 호출
+      fetch('/public_list')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
+          }
+          return response.json();
+        })
+
+        .then(files => {
+          // 파일 목록을 순회하며 HTML 리스트 생성
+          files.forEach(fileName => {
+            const listItem = document.createElement('li');
+            const anchor = document.createElement('a');
+
+            anchor.href = `/${encodeURIComponent(fileName)}`
+            anchor.textContent = fileName;
+
+            listItem.appendChild(anchor);
+            fileListElement.appendChild(listItem);
+          });
+        })
+
+        .catch(error => {
+          console.error('파일 목록을 가져오는 데 실패했습니다:', error);
+          // 오류 발생 시 오류 메시지 표시
+          fileListElement.innerHTML = `<li>파일 목록 로딩 오류: ${error.message}</li>`;
+        });
+    });
+  </script>
+  <p> 목록 출력 완료 ! </p>
+</body>
+</html>

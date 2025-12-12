@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영상 업로드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(80, 160, 255, 0.12), transparent 30%), #0c1118;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+            color: #e8eef5;
+        }
+
+        .upload-container {
+            background-color: #161b22;
+            padding: 44px;
+            border-radius: 14px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+            width: 100%;
+            max-width: 960px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        h2 {
+            text-align: center;
+            color: #e8eef5;
+            margin-bottom: 24px;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #c7d4e6;
+            font-size: 13px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            margin-top: 4px;
+            margin-bottom: 18px;
+            background-color: #0f141b;
+            border: 1px solid #2b3645;
+            border-radius: 10px;
+            color: #e8eef5;
+            font-size: 14px;
+            font-family: 'Roboto', Arial, sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #63b3ff;
+            box-shadow: 0 0 0 3px rgba(99, 179, 255, 0.2);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .file-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .file-input-box {
+            flex: 1;
+        }
+
+        .file-info-box {
+            flex: 1;
+            background-color: #0f141b;
+            color: #e8eef5;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+            border: 1px solid #2b3645;
+        }
+
+        .file-info-box span {
+            color: #9fb7d1;
+        }
+
+        .file-info-box span span {
+            color: #e8eef5;
+            font-weight: 600;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+            background-color: #0f141b;
+            color: #9fb7d1;
+            border: 2px dashed #63b3ff;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            min-height: 110px;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+            margin-bottom: 0;
+        }
+
+        .file-label:hover {
+            background-color: #151c27;
+            border-color: #8ac7ff;
+            color: #e8eef5;
+        }
+
+        .bottom-row {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .notes-box {
+            flex: 1;
+            background-color: #0f141b;
+            color: #9fb7d1;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.6;
+            border: 1px solid #2b3645;
+        }
+
+        .notes-box strong {
+            color: #e8eef5;
+            display: block;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .notes-box ul {
+            padding-left: 20px;
+            margin-top: 8px;
+        }
+
+        .notes-box li {
+            margin-bottom: 6px;
+        }
+
+        .button-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: background-color 0.2s, transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+        }
+
+        #submit-btn {
+            background: linear-gradient(90deg, #63b3ff, #4a9eff);
+            color: white;
+        }
+
+        #submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(79, 158, 255, 0.35);
+        }
+
+        #cancel-btn {
+            background-color: transparent;
+            color: #9fb7d1;
+            border: 1px solid #2b3645;
+            border-radius: 10px;
+        }
+
+        #cancel-btn:hover {
+            background-color: #151c27;
+            color: #e8eef5;
+        }
+
+        button:disabled {
+            background-color: #2b3645;
+            color: #6e7a8b;
+            cursor: not-allowed;
+        }
+
+        .message {
+            color: #ff7b7b;
+            font-size: 14px;
+            margin-top: 16px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.success {
+            color: #72e6b2;
+        }
+
+        .message.loading {
+            color: #63b3ff;
+        }
+
+        .progress-container {
+            width: 100%;
+            margin-top: 24px;
+            display: none;
+        }
+
+        .progress-bar-wrapper {
+            width: 100%;
+            height: 24px;
+            background-color: #0f141b;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #2b3645;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #63b3ff, #4a9eff);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 12px;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #e8eef5;
+            font-size: 12px;
+            font-weight: 700;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .upload-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #9fb7d1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="upload-container">
+        <form id="uploadForm" action="/api/upload_video" method="POST" enctype="multipart/form-data" onsubmit="handleUpload(event)">
+
+            <h2>영상을 업로드합니다.</h2>
+
+            <div class="file-row">
+                <div class="file-input-box">
+                    <label for="videoFile" class="file-label" id="file-label-text">
+                        영상 업로드 파일 찾기<br>(MP4만 가능)
+                    </label>
+                    <input type="file" id="videoFile" name="videoFile" accept=".mp4" required>
+                </div>
+                <div class="file-info-box">
+                    <span>영상 용량: <span id="file-size">N/A</span></span>
+                    <span>영상 길이: <span id="file-duration">N/A</span></span>
+                </div>
+            </div>
+
+            <div>
+                <label>
+                    영상 제목을 입력해주세요.
+                    <input type="text" id="videoname" name="videoname" placeholder="영상 제목을 입력해주세요..." required>
+                </label>
+            </div>
+
+            <div>
+                <label>
+                    영상 관련 설명을 작성해주세요.
+                    <textarea id="description" name="description" placeholder="설명을 작성해주세요..."></textarea>
+                </label>
+            </div>
+
+            <div class="bottom-row">
+                <div class="notes-box">
+                    <strong>업로드 관련 주의사항</strong>
+                    <ul style="padding-left: 20px; margin-top: 10px;">
+                        <li>MP4 형식의 파일만 업로드 가능합니다.</li>
+                        <li>4기가 이상의 파일 업로드시 실패할 가능성이 있습니다.</li>
+                        <li>업로드 완료까지 시간이 걸릴 수 있습니다.</li>
+                    </ul>
+                </div>
+                <div class="button-group">
+                    <button type="button" id="cancel-btn" onclick="window.location.href='/main.html'">취소</button>
+                    <button type="submit" id="submit-btn">업로드 실행</button>
+                </div>
+            </div>
+
+            <p id="result-message" class="message"></p>
+
+            <div class="progress-container" id="progress-container">
+                <div class="progress-bar-wrapper">
+                    <div class="progress-bar" id="progress-bar"></div>
+                    <div class="progress-text" id="progress-text">0%</div>
+                </div>
+                <div class="upload-stats">
+                    <span id="uploaded-size">0 MB / 0 MB</span>
+                    <span id="upload-speed">0 MB/s</span>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('videoFile');
+        const fileLabelText = document.getElementById('file-label-text');
+        const fileSizeEl = document.getElementById('file-size');
+        const fileDurationEl = document.getElementById('file-duration');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user_id = sessionStorage.getItem("user_id");
+            if (!user_id) {
+                alert("로그인이 필요합니다. 로그인 페이지로 이동합니다.");
+                window.location.href = "/login.html";
+            }
+        });
+
+        // 파일 선택 시 정보 업데이트
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.type !== 'video/mp4') {
+                    alert("MP4 파일만 업로드 가능합니다.");
+                    fileInput.value = ''; // 입력 초기화
+                    return;
+                }
+                updateFileInfo(file);
+            }
+        });
+
+        // 파일 정보 (용량, 길이)를 읽어오는 함수
+        function updateFileInfo(file) {
+            // 1. 파일명 및 용량
+            fileLabelText.textContent = file.name;
+            fileSizeEl.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+
+            // 2. 영상 길이 (Video API 사용)
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.onloadedmetadata = () => {
+                window.URL.revokeObjectURL(video.src);
+                const duration = Math.floor(video.duration);
+                const minutes = Math.floor(duration / 60);
+                const seconds = duration % 60;
+                fileDurationEl.textContent = `${minutes}분 ${seconds}초`;
+            };
+            video.src = URL.createObjectURL(file);
+        }
+
+        // 파일 업로드 처리 (XMLHttpRequest로 진행률 추적)
+        function handleUpload(event) {
+            event.preventDefault();
+
+            const form = document.getElementById('uploadForm');
+            const statusEl = document.getElementById('result-message');
+            const submitBtn = document.getElementById('submit-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const uploadedSizeEl = document.getElementById('uploaded-size');
+            const uploadSpeedEl = document.getElementById('upload-speed');
+
+            // sessionStorage에서 user_id 가져오기
+            const user_id = sessionStorage.getItem("user_id");
+            if (!user_id) {
+                statusEl.textContent = "로그인 세션이 만료되었습니다. 다시 로그인해주세요.";
+                statusEl.className = "message";
+                statusEl.style.display = 'block';
+                return;
+            }
+
+            statusEl.textContent = "업로드 준비 중...";
+            statusEl.className = "message loading";
+            statusEl.style.display = 'block';
+            progressContainer.style.display = 'block';
+            submitBtn.disabled = true;
+            cancelBtn.disabled = true;
+
+            const formData = new FormData(form);
+            formData.append("user_id", user_id);
+
+            const xhr = new XMLHttpRequest();
+            let startTime = Date.now();
+            let lastLoaded = 0;
+
+            // 업로드 진행 상황 추적
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    const uploadedMB = (e.loaded / 1024 / 1024).toFixed(2);
+                    const totalMB = (e.total / 1024 / 1024).toFixed(2);
+
+                    // 진행률 업데이트
+                    progressBar.style.width = percentComplete + '%';
+                    progressText.textContent = Math.round(percentComplete) + '%';
+                    uploadedSizeEl.textContent = `${uploadedMB} MB / ${totalMB} MB`;
+
+                    // 업로드 속도 계산
+                    const currentTime = Date.now();
+                    const elapsedTime = (currentTime - startTime) / 1000; // 초
+                    const uploadedBytes = e.loaded - lastLoaded;
+                    const speed = (uploadedBytes / 1024 / 1024 / (elapsedTime || 1)).toFixed(2);
+                    uploadSpeedEl.textContent = `${speed} MB/s`;
+
+                    lastLoaded = e.loaded;
+                    startTime = currentTime;
+
+                    if (percentComplete < 100) {
+                        statusEl.textContent = "업로드 중...";
+                    }
+                }
+            });
+
+            // 업로드 완료
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        if (data.status === 'success') {
+                            progressBar.style.width = '100%';
+                            progressText.textContent = '100%';
+                            statusEl.textContent = "업로드 성공! 메인 페이지로 이동합니다.";
+                            statusEl.className = "message success";
+                            setTimeout(() => {
+                                window.location.href = '/main.html';
+                            }, 2000);
+                        } else {
+                            statusEl.textContent = "서버 오류로 업로드에 실패했습니다.";
+                            statusEl.className = "message";
+                            progressContainer.style.display = 'none';
+                            submitBtn.disabled = false;
+                            cancelBtn.disabled = false;
+                        }
+                    } catch (error) {
+                        statusEl.textContent = "응답 처리 중 오류가 발생했습니다.";
+                        statusEl.className = "message";
+                        progressContainer.style.display = 'none';
+                        submitBtn.disabled = false;
+                        cancelBtn.disabled = false;
+                    }
+                } else {
+                    statusEl.textContent = `서버 오류 (${xhr.status})`;
+                    statusEl.className = "message";
+                    progressContainer.style.display = 'none';
+                    submitBtn.disabled = false;
+                    cancelBtn.disabled = false;
+                }
+            });
+
+            // 업로드 실패
+            xhr.addEventListener('error', () => {
+                statusEl.textContent = "네트워크 오류 또는 서버 접속에 실패했습니다.";
+                statusEl.className = "message";
+                progressContainer.style.display = 'none';
+                submitBtn.disabled = false;
+                cancelBtn.disabled = false;
+            });
+
+            // 업로드 취소
+            xhr.addEventListener('abort', () => {
+                statusEl.textContent = "업로드가 취소되었습니다.";
+                statusEl.className = "message";
+                progressContainer.style.display = 'none';
+                submitBtn.disabled = false;
+                cancelBtn.disabled = false;
+            });
+
+            // 요청 전송
+            xhr.open(form.method, form.action);
+            xhr.send(formData);
+        }
+    </script>
+</body>
+</html>

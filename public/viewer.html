@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>영상 재생 페이지</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(80, 160, 255, 0.12), transparent 30%), #0c1118;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 28px;
+            min-height: 100vh;
+            color: #e8eef5;
+        }
+
+        .black-box-wrapper {
+            width: 100%;
+            max-width: 1280px;
+            background-color: transparent;
+        }
+
+        .video-page-wrapper {
+            width: 100%;
+        }
+
+        video {
+            width: 100%;
+            display: block;
+            background-color: #000;
+            border-radius: 12px;
+            pointer-events: auto;
+        }
+
+        .video-info {
+            color: #e8eef5;
+            background-color: #161b22;
+            padding: 18px 20px;
+            margin-top: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-info h2 {
+            margin: 0 0 12px 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #e8eef5;
+            line-height: 1.4;
+        }
+
+        .video-info p {
+            margin: 12px 0;
+            color: #9fb7d1;
+            white-space: pre-wrap;
+            border-top: 1px solid #2b3645;
+            padding-top: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .info-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #9fb7d1;
+            border-top: 1px solid #2b3645;
+            padding-top: 12px;
+            margin-top: 12px;
+        }
+
+        .playback-controls {
+            color: #e8eef5;
+            background-color: #161b22;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-top: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .playback-controls label {
+            font-weight: 400;
+            flex-shrink: 0;
+            font-size: 14px;
+            color: #9fb7d1;
+        }
+
+        .playback-controls label[for="start-second"] {
+            font-weight: 400;
+        }
+
+        .playback-controls input[type="number"] {
+            width: 70px;
+            padding: 8px 12px;
+            background-color: #0f141b;
+            border: 1px solid #2b3645;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #e8eef5;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .playback-controls input[type="number"]:focus {
+            outline: none;
+            border-color: #63b3ff;
+            box-shadow: 0 0 0 3px rgba(99, 179, 255, 0.2);
+        }
+
+        .playback-controls button {
+            padding: 8px 16px;
+            background: linear-gradient(90deg, #63b3ff, #4a9eff);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            margin-left: auto;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .playback-controls button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(79, 158, 255, 0.35);
+        }
+
+        .playback-controls button:active {
+            transform: translateY(0);
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="black-box-wrapper">
+
+        <div class="video-page-wrapper">
+
+            <video id="main-video" controls>
+                <source src="" type="video/mp4">
+                브라우저가 video 태그를 지원하지 않습니다.
+            </video>
+
+            <div class="video-info">
+                <h2 id="video-title">영상 제목 로딩 중...</h2>
+
+                <p id="video-description">-</p>
+
+                <div class="info-details">
+                    <span id="video-uploader">업로더: -</span>
+                    <span id="video-views">조회수: -</span>
+                    <span id="video-date">업로드: -</span>
+                </div>
+            </div>
+
+            <div class="playback-controls">
+                <label for="start-minute">재생 시간:</label>
+                <input type="number" id="start-minute" placeholder="분" min="0">
+                <label for="start-second">초:</label>
+                <input type="number" id="start-second" placeholder="초" min="0" max="59">
+
+                <button id="jump-button">해당 시간부터 재생</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let currentVideoId = null;
+        let currentUserId = null;
+        let historyUpdateInterval = null; // setInterval을 저장할 변수
+
+        // === 페이지 로드 ===
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+
+            currentVideoId = urlParams.get('id');
+            currentUserId = sessionStorage.getItem("user_id");
+            const startTime = parseInt(urlParams.get('time') || '0', 10);
+
+            const wrapper = document.querySelector('.black-box-wrapper');
+
+            if (!currentVideoId) {
+                if (wrapper) {
+                    wrapper.innerHTML =
+                        '<h1 style="color: red; padding: 20px;">오류: 영상 ID가 없습니다.</h1>';
+                }
+                return;
+            }
+
+            try {
+                // 1. 서버에 영상 상세 정보 요청
+                const response = await fetch(`/api/video_details?id=${currentVideoId}`);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+
+                const videoData = await response.json();
+
+                // 2. 받아온 JSON 데이터로 페이지 채우기
+                const video = document.getElementById('main-video');
+                const sourceTag = video.querySelector('source');
+                const titleEl = document.getElementById('video-title');
+                const uploaderEl = document.getElementById('video-uploader');
+                const viewsEl = document.getElementById('video-views');
+                const dateEl = document.getElementById('video-date');
+                const descriptionEl = document.getElementById('video-description');
+
+                sourceTag.setAttribute('src', `/${videoData.filename}`);
+                video.load();
+
+                titleEl.textContent = videoData.videoname || "제목 없음";
+                uploaderEl.textContent = `업로더: ${videoData.uploader || "-"}`;
+                viewsEl.textContent = `조회수: ${videoData.view_count || 0}회`;
+                dateEl.textContent = `업로드: ${videoData.uploaded_day || "-"}`;
+
+                if (videoData.description && videoData.description.trim() !== "") {
+                    descriptionEl.textContent = videoData.description;
+                } else {
+                    descriptionEl.textContent = "영상 설명이 없습니다.";
+                }
+
+                // 2-1. 조회수 증가 API 호출
+                try {
+                    await fetch('/api/increment_view', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `video_id=${currentVideoId}`
+                    });
+                    console.log('조회수 증가 완료');
+                } catch (error) {
+                    console.error('조회수 증가 실패:', error);
+                }
+
+                video.addEventListener('loadedmetadata', () => {
+                    if (startTime > 0) {
+                        console.log(`이어보기 시작 시간 적용: ${startTime}초`);
+                        video.currentTime = startTime;
+                        video.play();
+                    }
+                });
+
+
+                // 'play' 이벤트: 재생이 시작될 때 (또는 일시정지 해제 시)
+                video.addEventListener('play', () => {
+                    if (historyUpdateInterval) {
+                        clearInterval(historyUpdateInterval);
+                    }
+                    // 3초(3000ms)마다 updateWatchHistory 함수 실행
+                    historyUpdateInterval = setInterval(updateWatchHistory, 3000);
+                });
+
+                // ===============================================
+                // ===============================================
+                // 'pause' 이벤트: (기능 없음)
+
+                // 'ended' 이벤트: 영상이 끝났을 때
+                video.addEventListener('ended', () => {
+                    // 갱신 인터벌 중지
+                    clearInterval(historyUpdateInterval);
+                    // 시청 기록을 0초로 리셋
+                    updateWatchHistory(0);
+                });
+
+
+            } catch (error) {
+                console.error('Failed to load video details:', error);
+                if (wrapper) {
+                    wrapper.innerHTML =
+                        `<h1 style="color: red; padding: 20px;">오류: ${error.message}</h1>`;
+                }
+            }
+        });
+
+        async function updateWatchHistory(forceRecord) {
+            const video = document.getElementById('main-video');
+
+            if (!video || !currentUserId || !currentVideoId) {
+                return;
+            }
+
+            const record = (forceRecord !== undefined)
+                            ? forceRecord
+                            : Math.floor(video.currentTime);
+
+            const body = `user_id=${currentUserId}&video_id=${currentVideoId}&record=${record}`;
+
+            try {
+                await fetch('/api/update_history', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: body
+                });
+                // console.log(`시청 기록 갱신: ${record}초`);
+
+            } catch (error) {
+                console.error("시청 기록 갱신 실패:", error);
+                if (historyUpdateInterval) {
+                    clearInterval(historyUpdateInterval);
+                }
+            }
+        }
+
+
+        document.getElementById('jump-button').addEventListener('click', () => {
+            const video = document.getElementById('main-video');
+            const minuteInput = document.getElementById('start-minute');
+            const secondInput = document.getElementById('start-second');
+
+            // 입력값 읽기 (빈 값이면 0)
+            const minuteValue = minuteInput.value.trim();
+            const secondValue = secondInput.value.trim();
+
+            const minutes = minuteValue === '' ? 0 : parseFloat(minuteValue);
+            const seconds = secondValue === '' ? 0 : parseFloat(secondValue);
+
+            console.log('입력값 - 분:', minutes, '초:', seconds);
+
+            // 유효성 검사
+            if (isNaN(minutes) || isNaN(seconds) || minutes < 0 || seconds < 0) {
+                alert('유효한 시간을 입력해주세요.');
+                return;
+            }
+
+            const totalSeconds = (minutes * 60) + seconds;
+            console.log('이동할 시간:', totalSeconds, '초');
+
+            // video가 로드되었는지 확인
+            if (video.readyState >= 2) { // HAVE_CURRENT_DATA 이상
+                video.currentTime = totalSeconds;
+                video.play();
+                console.log('시간 이동 완료:', video.currentTime);
+            } else {
+                // 메타데이터 로드 후 실행
+                video.addEventListener('loadedmetadata', function setTime() {
+                    video.currentTime = totalSeconds;
+                    video.play();
+                    console.log('시간 이동 완료 (메타데이터 로드 후):', video.currentTime);
+                    video.removeEventListener('loadedmetadata', setTime);
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

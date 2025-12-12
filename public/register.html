@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(80, 160, 255, 0.12), transparent 30%), #0c1118;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #e8eef5;
+        }
+
+        .register-container {
+            background-color: #161b22;
+            padding: 44px 42px;
+            border-radius: 14px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+            width: 100%;
+            max-width: 460px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: #9ac9ff;
+            letter-spacing: 0.8px;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            text-align: center;
+            color: #e8eef5;
+            margin-bottom: 20px;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #9fb7d1;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #c7d4e6;
+            font-size: 13px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            background-color: #0f141b;
+            border: 1px solid #2b3645;
+            border-radius: 10px;
+            color: #e8eef5;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #63b3ff;
+            box-shadow: 0 0 0 3px rgba(99, 179, 255, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(90deg, #63b3ff, #4a9eff);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            margin-top: 6px;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(79, 158, 255, 0.35);
+        }
+
+        button:active {
+            transform: translateY(0);
+            opacity: 0.9;
+        }
+
+        .error-message {
+            color: #ff7b7b;
+            font-size: 14px;
+            margin-top: 4px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="brand">HAN VIDEO</div>
+        <h2>회원가입</h2>
+        <p class="subtitle">시청 기록을 저장하려면 계정을 만들어주세요</p>
+        <form id="registerForm" action="/register" method="POST" onsubmit="handleRegistration(event)">
+            <div>
+                <label>
+                    이름:
+                    <input type="text" id="name" name="name" required>
+                </label>
+            </div>
+            <div>
+                <label>
+                    아이디 (최소 4자):
+                    <input type="text" id="username" name="username" required maxlength="20" minlength="4">
+                </label>
+            </div>
+            <div>
+                <label>
+                    비밀번호 (최소 4자):
+                    <input type="password" id="password" name="password" required maxlength="20" minlength="4">
+                </label>
+            </div>
+            <div>
+                <label>
+                    비밀번호 확인:
+                    <input type="password" id="confirm_password" required maxlength="20" minlength="4">
+                </label>
+                <p id="password-match-error" class="error-message"></p>
+            </div>
+
+            <p id="result-message" class="error-message"></p>
+
+            <button type="submit">가입하기</button>
+        </form>
+    </div>
+
+    <script>
+        function validatePasswordMatch() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const errorElement = document.getElementById('password-match-error');
+
+            if (password.length < 4) {
+                errorElement.textContent = "비밀번호를 4자 이상 입력하세요.";
+                return false;
+            } else if (password !== confirmPassword) {
+                errorElement.textContent = "비밀번호가 일치하지 않습니다.";
+                return false;
+            } else {
+                errorElement.textContent = "";
+                return true;
+            }
+        }
+
+        async function handleRegistration(event) {
+            event.preventDefault();
+
+            const form = document.getElementById('registerForm');
+            const resultMessageElement = document.getElementById('result-message');
+
+            // 기존 오류메시지를 숨기고 새롭게 생성
+            resultMessageElement.textContent = "";
+
+            if (!validatePasswordMatch()) {
+                return;
+            }
+
+            const formData = new URLSearchParams(new FormData(form)).toString();
+            let clientMessage = "";
+
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    clientMessage = "회원가입이 성공적으로 완료되었습니다. <br>로그인 페이지로 이동합니다!";
+                    resultMessageElement.style.color = "#72e6b2"; // 성공 시 그린-민트
+                    // 3초후 login.html로 이동
+                    setTimeout(() => {
+                        window.location.href = "/login.html";
+                    }, 5000);
+
+                } else if (response.status === 409 && data.status === 'failure') {
+                    clientMessage = "아이디 중복 또는 서버 처리 오류로 <br>회원가입에 실패했습니다.";
+                } else {
+                    clientMessage = "알 수 없는 서버 오류가 발생했습니다.";
+                }
+
+                resultMessageElement.innerHTML = clientMessage;
+
+            } catch (error) {
+                console.error('Registration failed:', error);
+                resultMessageElement.textContent = "네트워크 오류 또는 서버 접속에 실패했습니다.";
+            }
+        }
+    </script>
+</body>
+</html>

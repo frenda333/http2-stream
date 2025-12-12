@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(80, 160, 255, 0.12), transparent 30%), #0c1118;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #e8eef5;
+        }
+
+        .login-container {
+            background-color: #161b22;
+            padding: 44px 42px;
+            border-radius: 14px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+            width: 100%;
+            max-width: 460px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: #9ac9ff;
+            letter-spacing: 0.8px;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            text-align: center;
+            color: #e8eef5;
+            margin-bottom: 20px;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #9fb7d1;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #c7d4e6;
+            font-size: 13px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            background-color: #0f141b;
+            border: 1px solid #2b3645;
+            border-radius: 10px;
+            color: #e8eef5;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #63b3ff;
+            box-shadow: 0 0 0 3px rgba(99, 179, 255, 0.2);
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(90deg, #63b3ff, #4a9eff);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            margin-top: 6px;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+            letter-spacing: 0.5px;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(79, 158, 255, 0.35);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+            opacity: 0.9;
+        }
+
+        .message {
+            color: #ff7b7b;
+            font-size: 14px;
+            margin-top: 4px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .message.success {
+            color: #72e6b2;
+        }
+
+        .register-link-area {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid #242d38;
+            color: #9fb7d1;
+            font-size: 13px;
+        }
+
+        .register-link-area a {
+            font-size: 14px;
+            color: #63b3ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .register-link-area a:hover {
+            color: #8ac7ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="brand">HAN VIDEO</div>
+        <h2>로그인</h2>
+        <p class="subtitle">영상 저장소에 접속하려면 계정으로 로그인하세요</p>
+        <form id="loginForm" action="/login" method="POST" onsubmit="handleLogin(event)">
+            <div>
+                <label>
+                    아이디:
+                    <input type="text" id="username" name="username" required maxlength="20">
+                </label>
+            </div>
+            <div>
+                <label>
+                    비밀번호:
+                    <input type="password" id="password" name="password" required maxlength="20">
+                </label>
+            </div>
+
+            <p id="result-message" class="message"></p>
+
+            <button type="submit">로그인</button>
+
+            <div class="register-link-area">
+                <a href="/register.html">회원가입하기</a>
+            </div>
+            </form>
+    </div>
+
+    <script>
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const form = document.getElementById('loginForm');
+            const resultMessageElement = document.getElementById('result-message');
+            resultMessageElement.textContent = "";
+
+            const formData = new URLSearchParams(new FormData(form)).toString();
+            let clientMessage = "";
+
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success' && data.user_id) {
+                    clientMessage = "로그인 성공! <br>메인 페이지로 이동합니다.";
+                    resultMessageElement.style.color = "#72e6b2";
+
+                    const username = document.getElementById('username').value;
+
+                    sessionStorage.setItem("user_id", data.user_id);
+                    sessionStorage.setItem("username", username);
+                    setTimeout(() => {
+                        window.location.href = "/main.html";
+                    }, 2000);
+
+                } else if (response.status === 401 && data.status === 'failure') {
+                    clientMessage = "아이디 또는 비밀번호가<br>올바르지 않습니다.";
+
+                } else {
+                    clientMessage = "알 수 없는 서버 오류가 발생했습니다.";
+
+                }
+
+                resultMessageElement.innerHTML = clientMessage;
+
+            } catch (error) {
+                console.error('Login failed:', error);
+                resultMessageElement.textContent = "네트워크 오류 또는 서버 접속에 실패했습니다.";
+            }
+        }
+    </script>
+</body>
+</html>
